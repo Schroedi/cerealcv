@@ -12,11 +12,8 @@ namespace cereal {
 void save(JSONOutputArchive& ar, const BinaryData<const unsigned char*>& m) {
     ar.saveBinaryValue(m.data, m.size);
 }
-void load_and_construct(JSONInputArchive& ar, construct<BinaryData<const unsigned char*>>& construct) {
-    std::string tmp;
-    ar.loadValue(tmp);
-    auto decoded = base64::decode(tmp);
-    construct(reinterpret_cast<const unsigned char*>(decoded.data()), decoded.size());
+void load(JSONInputArchive& ar, BinaryData<unsigned char*>& m) {
+    ar.loadBinaryValue(m.data, m.size);
 }
 }
 
@@ -37,9 +34,16 @@ int main() {
         cereal::PortableBinaryOutputArchive archive(os);
         archive(orig);
     } else {
-       std::ofstream os(filename);
-       cereal::JSONOutputArchive archive(os);
-       archive(orig);
+        {
+            std::ofstream os(filename);
+            cereal::JSONOutputArchive archive(os);
+            archive(orig);
+        }
+        {
+            std::ifstream is(filename);
+            cereal::JSONInputArchive archive(is);
+            archive(orig);
+        }
     }
 
 //    // read and compare
