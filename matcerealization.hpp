@@ -20,17 +20,16 @@
 #ifndef MATCEREALISATION_HPP_
 #define MATCEREALISATION_HPP_
 
+#include <cereal/archives/portable_binary.hpp>
+#include <cereal/archives/json.hpp>
+
 #include "opencv2/core/core.hpp"
 #include "cereal/cereal.hpp"
 
 
 namespace cereal {
-void save(JSONOutputArchive& ar, const BinaryData<const unsigned char*>& m) {
-    ar.saveBinaryValue(m.data, m.size);
-}
-void load(JSONInputArchive& ar, BinaryData<unsigned char*>& m) {
-    ar.loadBinaryValue(m.data, m.size);
-}
+void save(JSONOutputArchive& ar, const BinaryData<const unsigned char*>& m);
+void load(JSONInputArchive& ar, BinaryData<unsigned char*>& m);
 }
 
 /**
@@ -49,31 +48,7 @@ namespace cv {
  * @param[in] mat The matrix to serialise.
  */
 template<class Archive>
-void save(Archive& ar, const cv::Mat& mat)
-{
-    int rows, cols, type;
-    bool continuous;
-
-    rows = mat.rows;
-    cols = mat.cols;
-    type = mat.type();
-    continuous = mat.isContinuous();
-
-    ar & rows & cols & type & continuous;
-
-    if (continuous) {
-        const int data_size = rows * cols * static_cast<int>(mat.elemSize());
-        auto mat_data = cereal::binary_data(mat.ptr(), data_size);
-        ar & mat_data;
-    }
-    else {
-        const int row_size = cols * static_cast<int>(mat.elemSize());
-        for (int i = 0; i < rows; i++) {
-            auto row_data = cereal::binary_data(mat.ptr(i), row_size);
-            ar & row_data;
-        }
-    }
-};
+void save(Archive& ar, const cv::Mat& mat);
 
 /**
  * De-serialise a cv::Mat using cereal.
@@ -84,28 +59,13 @@ void save(Archive& ar, const cv::Mat& mat)
  * @param[in] mat The matrix to deserialise into.
  */
 template<class Archive>
-void load(Archive& ar, cv::Mat& mat)
-{
-    int rows, cols, type;
-    bool continuous;
+void load(Archive& ar, cv::Mat& mat);
 
-    ar & rows & cols & type & continuous;
+}
 
-    if (continuous) {
-        mat.create(rows, cols, type);
-        const int data_size = rows * cols * static_cast<int>(mat.elemSize());
-        auto mat_data = cereal::binary_data(mat.ptr(), data_size);
-        ar & mat_data;
-    }
-    else {
-        mat.create(rows, cols, type);
-        const int row_size = cols * static_cast<int>(mat.elemSize());
-        for (int i = 0; i < rows; i++) {
-            auto row_data = cereal::binary_data(mat.ptr(i), row_size);
-            ar & row_data;
-        }
-    }
-};
+namespace cereal {
+template <class Archive>
+struct specialize<Archive, cv::Mat, cereal::specialization::non_member_load_save> {};
 
 }
 

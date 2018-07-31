@@ -2,8 +2,6 @@
 #include <cv.hpp>
 #include <fstream>
 
-#include <cereal/archives/portable_binary.hpp>
-#include <cereal/archives/json.hpp>
 
 #include "matcerealization.hpp"
 
