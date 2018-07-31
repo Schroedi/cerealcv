@@ -54,15 +54,15 @@ void save(Archive& ar, const cv::Mat& mat)
     if (continuous) {
         const int data_size = rows * cols * static_cast<int>(mat.elemSize());
         auto mat_data = cereal::binary_data(mat.ptr(), data_size);
-        ar & mat_data;
-        //ar.saveBinaryValue(mat.ptr(), data_size);
+        // ar & mat_data;
+        ar.saveBinaryValue(mat.ptr(), data_size);
     }
     else {
         const int row_size = cols * static_cast<int>(mat.elemSize());
         for (int i = 0; i < rows; i++) {
             auto row_data = cereal::binary_data(mat.ptr(i), row_size);
-            ar & row_data;
-            //ar.saveBinaryValue(mat.ptr(i), row_size);
+            // ar & row_data;
+            ar.saveBinaryValue(mat.ptr(i), row_size);
         }
     }
 };
@@ -87,16 +87,16 @@ void load(Archive& ar, cv::Mat& mat)
         mat.create(rows, cols, type);
         const int data_size = rows * cols * static_cast<int>(mat.elemSize());
         auto mat_data = cereal::binary_data(mat.ptr(), data_size);
-        ar & mat_data;
-        //ar.loadBinaryData(mat.ptr(), data_size);
+        // ar & mat_data;
+        ar.loadBinaryData(mat.ptr(), data_size);
     }
     else {
         mat.create(rows, cols, type);
         const int row_size = cols * static_cast<int>(mat.elemSize());
         for (int i = 0; i < rows; i++) {
             auto row_data = cereal::binary_data(mat.ptr(i), row_size);
-            ar & row_data;
-            //ar.loadBinaryData(mat.ptr(i), row_size);
+            // ar & row_data;
+            ar.loadBinaryData(mat.ptr(i), row_size);
         }
     }
 };

@@ -20,13 +20,13 @@ int main() {
 
     // save original intrinsics
     if (useBinary) {
-        std::ofstream os(filename, std::ios::binary);
-        cereal::PortableBinaryOutputArchive archive(os);
-        archive(orig);
+        // std::ofstream os(filename, std::ios::binary);
+        // cereal::PortableBinaryOutputArchive archive(os);
+        // archive(orig);
     } else {
-//        std::ofstream os(filename);
-//        cereal::JSONOutputArchive archive(os);
-//        archive(orig);
+       std::ofstream os(filename);
+       cereal::JSONOutputArchive archive(os);
+        archive(orig);
     }
 
 //    // read and compare
