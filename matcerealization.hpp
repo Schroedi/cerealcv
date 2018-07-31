@@ -23,6 +23,19 @@
 #include "opencv2/core/core.hpp"
 #include "cereal/cereal.hpp"
 
+
+namespace cereal {
+void save(JSONOutputArchive& ar, const BinaryData<const unsigned char*>& m) {
+    ar.saveBinaryValue(m.data, m.size);
+}
+void load_and_construct(JSONInputArchive& ar, construct<BinaryData<const unsigned char*>>& construct) {
+    std::string tmp;
+    ar.loadValue(tmp);
+    auto decoded = base64::decode(tmp);
+    construct(reinterpret_cast<const unsigned char*>(decoded.data()), decoded.size());
+}
+}
+
 /**
  * Serialisation for OpenCV cv::Mat matrices for the serialisation
  * library cereal (http://uscilab.github.io/cereal/index.html).
@@ -55,14 +68,12 @@ void save(Archive& ar, const cv::Mat& mat)
         const int data_size = rows * cols * static_cast<int>(mat.elemSize());
         auto mat_data = cereal::binary_data(mat.ptr(), data_size);
         ar & mat_data;
-        //ar.saveBinaryValue(mat.ptr(), data_size);
     }
     else {
         const int row_size = cols * static_cast<int>(mat.elemSize());
         for (int i = 0; i < rows; i++) {
             auto row_data = cereal::binary_data(mat.ptr(i), row_size);
             ar & row_data;
-            //ar.saveBinaryValue(mat.ptr(i), row_size);
         }
     }
 };
@@ -88,7 +99,6 @@ void load(Archive& ar, cv::Mat& mat)
         const int data_size = rows * cols * static_cast<int>(mat.elemSize());
         auto mat_data = cereal::binary_data(mat.ptr(), data_size);
         ar & mat_data;
-        //ar.loadBinaryData(mat.ptr(), data_size);
     }
     else {
         mat.create(rows, cols, type);
@@ -96,7 +106,6 @@ void load(Archive& ar, cv::Mat& mat)
         for (int i = 0; i < rows; i++) {
             auto row_data = cereal::binary_data(mat.ptr(i), row_size);
             ar & row_data;
-            //ar.loadBinaryData(mat.ptr(i), row_size);
         }
     }
 };

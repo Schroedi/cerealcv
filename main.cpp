@@ -8,22 +8,10 @@
 #include "matcerealization.hpp"
 
 
-namespace cereal {
-void save(JSONOutputArchive& ar, const BinaryData<const unsigned char*>& m) {
-    ar.saveBinaryValue(m.data, m.size);
-}
-void load_and_construct(JSONInputArchive& ar, construct<BinaryData<const unsigned char*>>& construct) {
-    std::string tmp;
-    ar.loadValue(tmp);
-    auto decoded = base64::decode(tmp);
-    construct(reinterpret_cast<const unsigned char*>(decoded.data()), decoded.size());
-}
-}
-
 int main() {
     cv::Mat orig(2,2, CV_32FC1);
 
-    bool useBinary = true;
+    bool useBinary = false;
 
     std::string filename;
     if (useBinary)
@@ -42,13 +30,20 @@ int main() {
        archive(orig);
     }
 
-//    // read and compare
-//    {
-//        cv::Mat read();
-//        std::ifstream is(filename);
-//        cereal::JSONInputArchive inputArchive(is);
-//        inputArchive(read);
-//    }
+    // read and compare
+    {
+        cv::Mat read();
+
+        if (useBinary) {
+            std::ifstream is(filename, std::ios::binary);
+            cereal::PortableBinaryInputArchive inputArchive(is);
+            inputArchive(read);
+        } else {
+            std::ifstream is(filename);
+            cereal::JSONInputArchive inputArchive(is);
+            inputArchive(read);
+        }
+    }
 
 
     return 0;
